@@ -78,9 +78,7 @@ const eslintConfig = defineConfig([
     files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ["scripts/check-env.ts"],
-        },
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },

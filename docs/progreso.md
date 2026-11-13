@@ -2,8 +2,8 @@
 
 | Feature | Estado | Especificación | Handoff | Fecha |
 |---|---|---|---|---|
-| F0 · Base del proyecto | En desarrollo | `docs/specs/F0-base-del-proyecto.md` | Pendiente | 2026-11-12 |
-| F1 · Detalle de subasta y cuenta regresiva | Por iniciar | `docs/specs/F1-detalle-subasta-cuenta-regresiva.md` | Pendiente | - |
+| F0 · Base del proyecto | Terminada | `docs/specs/F0-base-del-proyecto.md` | `docs/handoffs/F0-base-del-proyecto.md` | 2026-11-12 |
+| F1 · Detalle de subasta y cuenta regresiva | Terminada | `docs/specs/F1-detalle-subasta-cuenta-regresiva.md` | `docs/handoffs/F1-detalle-subasta-cuenta-regresiva.md` | 2026-11-13 |
 | F2 · Formulario de puja y validación | Por iniciar | `docs/specs/F2-formulario-puja.md` | Pendiente | - |
 | F3 · Catálogo de subastas activas | Por iniciar | `docs/specs/F3-catalogo-subastas.md` | Pendiente | - |
 | F4 · Publicar subasta | Por iniciar | `docs/specs/F4-publicar-subasta.md` | Pendiente | - |
