@@ -38,6 +38,31 @@ export const UserBidsResponseSchema = z.object({
   pujas: z.array(UserBidSummarySchema),
 });
 
+export const PlaceBidInputSchema = z.object({
+  monto_centavos: z.number().int().positive("El monto debe ser un entero positivo"),
+});
+
+export const BidItemSchema = z.object({
+  id: z.string().min(1),
+  subasta_id: z.string().min(1),
+  postor_uid: z.string().min(1),
+  monto_centavos: z.number().int().positive(),
+  creada_en: z.string().datetime(),
+});
+
+export const AuctionUpdatedSnapshotSchema = z.object({
+  id: z.string().min(1),
+  puja_actual_centavos: z.number().int().positive(),
+  ganador_uid: z.string().nullable(),
+  cierra_en: z.string().datetime(),
+  extension_aplicada: z.boolean(),
+});
+
+export const PlaceBidResponseSchema = z.object({
+  puja: BidItemSchema,
+  subasta_actualizada: AuctionUpdatedSnapshotSchema,
+});
+
 export type CreateBidInput = z.infer<typeof CreateBidInputSchema>;
 export type BidValidationContext = z.infer<typeof BidValidationContextSchema>;
 export type BidResult = z.infer<typeof BidResultSchema>;
@@ -45,3 +70,7 @@ export type BidParticipationStatus = z.infer<typeof BidParticipationStatusSchema
 export type BidTabFilter = z.infer<typeof BidTabFilterSchema>;
 export type UserBidSummary = z.infer<typeof UserBidSummarySchema>;
 export type UserBidsResponse = z.infer<typeof UserBidsResponseSchema>;
+export type PlaceBidInput = z.infer<typeof PlaceBidInputSchema>;
+export type BidItem = z.infer<typeof BidItemSchema>;
+export type AuctionUpdatedSnapshot = z.infer<typeof AuctionUpdatedSnapshotSchema>;
+export type PlaceBidResponse = z.infer<typeof PlaceBidResponseSchema>;
