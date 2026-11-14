@@ -7,7 +7,7 @@
 | F2 · Formulario de puja y validación | Terminada | `docs/specs/F2-formulario-puja.md` | `docs/handoffs/F2-formulario-puja.md` | 2026-11-13 |
 | F3 · Catálogo de subastas activas | Terminada | `docs/specs/F3-catalogo-subastas.md` | `docs/handoffs/F3-catalogo-subastas.md` | 2026-11-14 |
 | F4 · Publicar subasta | Terminada | `docs/specs/F4-publicar-subasta.md` | `docs/handoffs/F4-publicar-subasta.md` | 2026-11-14 |
-| F5 · Mis pujas | Por iniciar | `docs/specs/F5-mis-pujas.md` | Pendiente | - |
+| F5 · Mis pujas | Terminada | `docs/specs/F5-mis-pujas.md` | `docs/handoffs/F5-mis-pujas.md` | 2026-11-14 |
 | F6 · API y Firestore | Por iniciar | `docs/specs/F6-api-firestore.md` | Pendiente | - |
 | F7 · Transacciones concurrentes y anti-sniper | Por iniciar | `docs/specs/F7-transacciones-anti-sniper.md` | Pendiente | - |
 | F8 · Autenticación y sesión HttpOnly | Por iniciar | `docs/specs/F8-autenticacion-sesion.md` | Pendiente | - |

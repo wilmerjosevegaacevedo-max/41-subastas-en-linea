@@ -22,6 +22,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </Link>
             <div className="flex items-center gap-3">
               <Link
+                href="/mis-pujas"
+                className="flex min-h-[44px] items-center rounded-lg border border-line bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-surface-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Mis pujas
+              </Link>
+              <Link
                 href="/vender"
                 className="flex min-h-[44px] items-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
