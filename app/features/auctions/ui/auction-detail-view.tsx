@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import type { AuctionDetail } from "../schema";
 import { CountdownTimer } from "./countdown-timer";
+import { BidForm } from "@/features/bids/ui/bid-form";
 
 export interface AuctionDetailViewProps {
   auction: AuctionDetail;
@@ -16,9 +20,15 @@ function formatMoney(cents: number): string {
 }
 
 export function AuctionDetailView({ auction }: AuctionDetailViewProps) {
-  const currentBidFormatted = formatMoney(auction.puja_actual_centavos);
+  const [currentBidCents, setCurrentBidCents] = useState<number>(auction.puja_actual_centavos);
+  const currentBidFormatted = formatMoney(currentBidCents);
   const minIncrementFormatted = formatMoney(auction.incremento_centavos);
   const mainPhoto = auction.fotos[0] ?? "";
+  const isAuctionClosed = auction.estado === "cerrada";
+
+  function handleBidAccepted(newAmountCentavos: number): void {
+    setCurrentBidCents(newAmountCentavos);
+  }
 
   return (
     <article className="space-y-8">
@@ -65,6 +75,14 @@ export function AuctionDetailView({ auction }: AuctionDetailViewProps) {
           <CountdownTimer closesAtIso={auction.cierra_en} />
         </section>
       </div>
+
+      <BidForm
+        subastaId={auction.id}
+        pujaActualCentavos={currentBidCents}
+        incrementoCentavos={auction.incremento_centavos}
+        isClosed={isAuctionClosed}
+        onBidAccepted={handleBidAccepted}
+      />
 
       <section aria-label="Descripción del artículo" className="space-y-3 rounded-xl border border-line bg-surface p-6">
         <h2 className="text-lg font-bold text-ink">Descripción detallada</h2>
