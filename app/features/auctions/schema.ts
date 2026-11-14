@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AuctionStatusSchema = z.enum(["activa", "cerrada"]);
+export const AuctionStatusSchema = z.enum(["activa", "cerrada", "cancelada"]);
 
 export const AuctionDetailSchema = z.object({
   id: z.string().min(1),
@@ -47,9 +47,50 @@ export const CreateAuctionResponseSchema = z.object({
   subasta: AuctionDetailSchema,
 });
 
+export const AuctionListQuerySchema = z.object({
+  estado: AuctionStatusSchema.optional(),
+  q: z.string().trim().max(100).optional(),
+  limite: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export const AuctionListResponseSchema = z.object({
+  subastas: z.array(AuctionDetailSchema),
+  total: z.number().int().nonnegative(),
+});
+
+export const UpdateAuctionInputSchema = z.object({
+  titulo: z
+    .string()
+    .trim()
+    .min(5, "El título debe tener al menos 5 caracteres")
+    .max(100, "El título no puede exceder 100 caracteres")
+    .optional(),
+  descripcion: z
+    .string()
+    .trim()
+    .min(20, "La descripción debe tener al menos 20 caracteres")
+    .max(2000, "La descripción no puede exceder 2000 caracteres")
+    .optional(),
+});
+
+export const AuctionDetailResponseSchema = z.object({
+  subasta: AuctionDetailSchema,
+});
+
+export const DeleteAuctionResponseSchema = z.object({
+  mensaje: z.string(),
+  subasta_id: z.string(),
+  estado: AuctionStatusSchema,
+});
+
 export type AuctionStatus = z.infer<typeof AuctionStatusSchema>;
 export type AuctionDetail = z.infer<typeof AuctionDetailSchema>;
 export type ServerTimeResponse = z.infer<typeof ServerTimeResponseSchema>;
 export type AuctionSortCriteria = z.infer<typeof AuctionSortCriteriaSchema>;
 export type CreateAuctionInput = z.infer<typeof CreateAuctionInputSchema>;
 export type CreateAuctionResponse = z.infer<typeof CreateAuctionResponseSchema>;
+export type AuctionListQuery = z.infer<typeof AuctionListQuerySchema>;
+export type AuctionListResponse = z.infer<typeof AuctionListResponseSchema>;
+export type UpdateAuctionInput = z.infer<typeof UpdateAuctionInputSchema>;
+export type AuctionDetailResponse = z.infer<typeof AuctionDetailResponseSchema>;
+export type DeleteAuctionResponse = z.infer<typeof DeleteAuctionResponseSchema>;

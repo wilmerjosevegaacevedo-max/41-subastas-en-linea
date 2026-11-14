@@ -1,6 +1,46 @@
-import { CreateAuctionInputSchema, CreateAuctionResponseSchema } from "@/features/auctions/schema";
+import {
+  AuctionListQuerySchema,
+  AuctionListResponseSchema,
+  CreateAuctionInputSchema,
+  CreateAuctionResponseSchema,
+} from "@/features/auctions/schema";
 import { container } from "@/features/container";
 import { errorResponse } from "@/shared/server/http";
+
+export async function GET(req: Request): Promise<Response> {
+  try {
+    const { searchParams } = new URL(req.url);
+    const rawQuery: Record<string, string> = {};
+    const estado = searchParams.get("estado");
+    if (estado !== null) {
+      rawQuery.estado = estado;
+    }
+    const q = searchParams.get("q");
+    if (q !== null) {
+      rawQuery.q = q;
+    }
+    const limite = searchParams.get("limite");
+    if (limite !== null) {
+      rawQuery.limite = limite;
+    }
+
+    const query = AuctionListQuerySchema.parse(rawQuery);
+    const subastas = await container.auctionService.listAuctions({
+      estado: query.estado,
+      q: query.q,
+      limite: query.limite,
+    });
+
+    const payload = {
+      subastas,
+      total: subastas.length,
+    };
+
+    return Response.json(AuctionListResponseSchema.parse(payload));
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
 
 export async function POST(req: Request): Promise<Response> {
   try {

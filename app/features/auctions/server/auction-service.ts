@@ -1,6 +1,12 @@
 import { DomainError } from "@/shared/server/errors";
-import { type AuctionDetail, type CreateAuctionInput, CreateAuctionInputSchema } from "../schema";
-import type { AuctionRepository } from "./repository";
+import {
+  type AuctionDetail,
+  type CreateAuctionInput,
+  CreateAuctionInputSchema,
+  type UpdateAuctionInput,
+  UpdateAuctionInputSchema,
+} from "../schema";
+import type { AuctionListFilters, AuctionRepository } from "./repository";
 
 export interface AuctionServiceDependencies {
   repository: AuctionRepository;
@@ -45,6 +51,41 @@ export class AuctionService {
 
   async getActiveAuctions(): Promise<AuctionDetail[]> {
     return this.repository.listActive();
+  }
+
+  async listAuctions(filters?: AuctionListFilters): Promise<AuctionDetail[]> {
+    return this.repository.list(filters);
+  }
+
+  async updateAuction(id: string, input: UpdateAuctionInput, userUid: string): Promise<AuctionDetail> {
+    const auction = await this.getAuctionById(id);
+    if (auction.vendedor_uid !== userUid) {
+      throw new DomainError("FORBIDDEN", "No tienes permiso para modificar esta subasta");
+    }
+    if (auction.estado !== "activa") {
+      throw new DomainError("CONFLICT", "Solo se pueden editar subastas activas");
+    }
+    if (auction.puja_actual_centavos !== auction.precio_inicial_centavos) {
+      throw new DomainError("CONFLICT", "No se puede editar una subasta que ya tiene pujas registradas");
+    }
+
+    const validated = UpdateAuctionInputSchema.parse(input);
+    return this.repository.update(id, validated);
+  }
+
+  async cancelAuction(id: string, userUid: string): Promise<AuctionDetail> {
+    const auction = await this.getAuctionById(id);
+    if (auction.vendedor_uid !== userUid) {
+      throw new DomainError("FORBIDDEN", "No tienes permiso para cancelar esta subasta");
+    }
+    if (auction.estado !== "activa") {
+      throw new DomainError("CONFLICT", "La subasta ya no está activa");
+    }
+    if (auction.puja_actual_centavos !== auction.precio_inicial_centavos) {
+      throw new DomainError("CONFLICT", "No se puede cancelar una subasta que ya tiene pujas");
+    }
+
+    return this.repository.cancel(id);
   }
 
   async createAuction(input: CreateAuctionInput, vendedorUid: string, now: Date): Promise<AuctionDetail> {

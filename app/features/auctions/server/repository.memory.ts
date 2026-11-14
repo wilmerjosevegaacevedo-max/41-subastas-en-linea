@@ -1,5 +1,5 @@
 import type { AuctionDetail } from "../schema";
-import type { AuctionRepository } from "./repository";
+import type { AuctionListFilters, AuctionRepository } from "./repository";
 
 export function createSampleAuction(now: Date): AuctionDetail {
   const threeDaysAhead = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -89,8 +89,68 @@ export class MemoryAuctionRepository implements AuctionRepository {
     return list;
   }
 
+  async list(filters?: AuctionListFilters): Promise<AuctionDetail[]> {
+    let result: AuctionDetail[] = Array.from(this.items.values());
+
+    if (filters?.estado !== undefined) {
+      result = result.filter((item) => {
+        return item.estado === filters.estado;
+      });
+    }
+
+    if (filters?.q !== undefined && filters.q.trim() !== "") {
+      const query = filters.q.toLowerCase().trim();
+      result = result.filter((item) => {
+        const matchesTitle = item.titulo.toLowerCase().includes(query);
+        const matchesDesc = item.descripcion.toLowerCase().includes(query);
+        return matchesTitle || matchesDesc;
+      });
+    }
+
+    if (filters?.limite !== undefined && filters.limite > 0) {
+      result = result.slice(0, filters.limite);
+    }
+
+    return result;
+  }
+
   async create(auction: AuctionDetail): Promise<AuctionDetail> {
     this.items.set(auction.id, auction);
     return auction;
+  }
+
+  async update(id: string, partial: { titulo?: string; descripcion?: string }): Promise<AuctionDetail> {
+    const existing = this.items.get(id);
+    if (existing === undefined) {
+      throw new Error("Subasta no encontrada");
+    }
+    let newTitulo = existing.titulo;
+    if (partial.titulo !== undefined) {
+      newTitulo = partial.titulo;
+    }
+    let newDescripcion = existing.descripcion;
+    if (partial.descripcion !== undefined) {
+      newDescripcion = partial.descripcion;
+    }
+    const updated: AuctionDetail = {
+      ...existing,
+      titulo: newTitulo,
+      descripcion: newDescripcion,
+    };
+    this.items.set(id, updated);
+    return updated;
+  }
+
+  async cancel(id: string): Promise<AuctionDetail> {
+    const existing = this.items.get(id);
+    if (existing === undefined) {
+      throw new Error("Subasta no encontrada");
+    }
+    const cancelled: AuctionDetail = {
+      ...existing,
+      estado: "cancelada",
+    };
+    this.items.set(id, cancelled);
+    return cancelled;
   }
 }
