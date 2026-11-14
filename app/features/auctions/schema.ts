@@ -83,6 +83,12 @@ export const DeleteAuctionResponseSchema = z.object({
   estado: AuctionStatusSchema,
 });
 
+export const UploadPhotoResponseSchema = z.object({
+  foto_url: z.string().url(),
+  tamano_bytes: z.number().int().positive(),
+  tipo_mime: z.string().min(1),
+});
+
 export type AuctionStatus = z.infer<typeof AuctionStatusSchema>;
 export type AuctionDetail = z.infer<typeof AuctionDetailSchema>;
 export type ServerTimeResponse = z.infer<typeof ServerTimeResponseSchema>;
@@ -94,3 +100,4 @@ export type AuctionListResponse = z.infer<typeof AuctionListResponseSchema>;
 export type UpdateAuctionInput = z.infer<typeof UpdateAuctionInputSchema>;
 export type AuctionDetailResponse = z.infer<typeof AuctionDetailResponseSchema>;
 export type DeleteAuctionResponse = z.infer<typeof DeleteAuctionResponseSchema>;
+export type UploadPhotoResponse = z.infer<typeof UploadPhotoResponseSchema>;

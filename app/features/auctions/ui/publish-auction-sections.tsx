@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { UploadPhotoResponseSchema } from "../schema";
 import { PhotoPreview, SamplePhotosPicker } from "./auction-form-subcomponents";
 
 export interface BasicInfoSectionProps {
@@ -85,6 +87,35 @@ export interface PhotoInputSectionProps {
 }
 
 export function PhotoInputSection(props: PhotoInputSectionProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const formData = new FormData();
+      formData.append("foto", file);
+      const res = await fetch("/api/fotos/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        setUploadError("Error al subir la imagen. Revisa el formato y tamaño.");
+        setIsUploading(false);
+        return;
+      }
+
+      const json = UploadPhotoResponseSchema.parse(await res.json());
+      props.onFotoChange(json.foto_url);
+    } catch {
+      setUploadError("Error de conexión durante la subida");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   let fotoDescribedBy = undefined;
   let fotoInvalid = false;
   let fotoNotice = null;
@@ -99,10 +130,34 @@ export function PhotoInputSection(props: PhotoInputSectionProps) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <div className="p-4 rounded-xl border border-line bg-surface-alt space-y-2">
+        <label htmlFor={`${props.fotoId}-file`} className="block text-sm font-bold text-ink">
+          Subir archivo directo a Vercel Blob
+        </label>
+        <p className="text-xs text-ink-muted">Formatos aceptados: JPEG, PNG o WebP (máx. 4.5 MB)</p>
+        <input
+          id={`${props.fotoId}-file`}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          disabled={isUploading}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file !== undefined) {
+              void handleFileUpload(file);
+            }
+          }}
+          className="text-xs text-ink file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-hover file:cursor-pointer cursor-pointer"
+        />
+        {isUploading && (
+          <p className="text-xs font-medium text-amber-500 animate-pulse">Subiendo foto a Vercel Blob...</p>
+        )}
+        {uploadError !== null && <p className="text-xs font-semibold text-danger">{uploadError}</p>}
+      </div>
+
       <div className="space-y-1.5">
         <label htmlFor={props.fotoId} className="text-sm font-bold text-ink">
-          URL de la fotografía principal (https)
+          O ingresa una URL de fotografía directa (https)
         </label>
         <input
           id={props.fotoId}
