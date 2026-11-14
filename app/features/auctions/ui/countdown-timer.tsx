@@ -9,6 +9,21 @@ export interface CountdownTimerProps {
 export function CountdownTimer({ closesAtIso }: CountdownTimerProps) {
   const { remaining, isSyncing } = useCountdown({ closesAtIso });
 
+  if (remaining.formatted === "--:--:--") {
+    return (
+      <section
+        role="timer"
+        aria-label="Tiempo restante de la subasta"
+        aria-live="polite"
+        className="rounded-lg border border-line bg-surface-alt p-4 text-center"
+      >
+        <p className="text-sm font-semibold tracking-wide uppercase text-ink-muted">Tiempo restante</p>
+        <p className="mt-1 font-mono text-3xl font-extrabold text-primary-strong">--:--:--</p>
+        <p className="text-xs text-ink-muted">Sincronizando con reloj del servidor...</p>
+      </section>
+    );
+  }
+
   if (remaining.isFinished) {
     return (
       <section

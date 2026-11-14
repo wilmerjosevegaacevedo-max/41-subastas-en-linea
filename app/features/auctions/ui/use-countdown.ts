@@ -24,12 +24,21 @@ function parseServerTime(raw: string): number | null {
   }
 }
 
+const INITIAL_REMAINING: TimeRemainingResult = {
+  totalSeconds: 0,
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0,
+  formatted: "--:--:--",
+  isUnderOneMinute: false,
+  isFinished: false,
+};
+
 export function useCountdown({ closesAtIso, initialServerOffsetMs = 0 }: UseCountdownOptions): UseCountdownReturn {
   const [serverOffsetMs, setServerOffsetMs] = useState<number>(initialServerOffsetMs);
   const [isSyncing, setIsSyncing] = useState<boolean>(true);
-  const [remaining, setRemaining] = useState<TimeRemainingResult>(() => {
-    return calculateTimeRemaining(closesAtIso, new Date(), initialServerOffsetMs);
-  });
+  const [remaining, setRemaining] = useState<TimeRemainingResult>(INITIAL_REMAINING);
 
   useEffect(() => {
     let isCancelled = false;
@@ -40,12 +49,14 @@ export function useCountdown({ closesAtIso, initialServerOffsetMs = 0 }: UseCoun
         const response = await fetch("/api/tiempo", { cache: "no-store" });
         if (!response.ok) {
           setIsSyncing(false);
+          setRemaining(calculateTimeRemaining(closesAtIso, new Date(), initialServerOffsetMs));
           return;
         }
         const text = await response.text();
         const serverTimestamp = parseServerTime(text);
         if (serverTimestamp === null || isCancelled) {
           setIsSyncing(false);
+          setRemaining(calculateTimeRemaining(closesAtIso, new Date(), initialServerOffsetMs));
           return;
         }
 
@@ -59,6 +70,7 @@ export function useCountdown({ closesAtIso, initialServerOffsetMs = 0 }: UseCoun
       } catch {
         if (!isCancelled) {
           setIsSyncing(false);
+          setRemaining(calculateTimeRemaining(closesAtIso, new Date(), initialServerOffsetMs));
         }
       }
     }
@@ -77,7 +89,7 @@ export function useCountdown({ closesAtIso, initialServerOffsetMs = 0 }: UseCoun
       isCancelled = true;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [closesAtIso]);
+  }, [closesAtIso, initialServerOffsetMs]);
 
   useEffect(() => {
     const interval = setInterval(() => {

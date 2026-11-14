@@ -20,6 +20,9 @@ export const ServerTimeResponseSchema = z.object({
   server_time: z.string().datetime(),
 });
 
+export const AuctionSortCriteriaSchema = z.enum(["cierre_proximo", "menor_precio", "mayor_precio"]);
+
 export type AuctionStatus = z.infer<typeof AuctionStatusSchema>;
 export type AuctionDetail = z.infer<typeof AuctionDetailSchema>;
 export type ServerTimeResponse = z.infer<typeof ServerTimeResponseSchema>;
+export type AuctionSortCriteria = z.infer<typeof AuctionSortCriteriaSchema>;
