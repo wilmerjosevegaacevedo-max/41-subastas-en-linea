@@ -6,7 +6,7 @@
 | F1 · Detalle de subasta y cuenta regresiva | Terminada | `docs/specs/F1-detalle-subasta-cuenta-regresiva.md` | `docs/handoffs/F1-detalle-subasta-cuenta-regresiva.md` | 2026-11-13 |
 | F2 · Formulario de puja y validación | Terminada | `docs/specs/F2-formulario-puja.md` | `docs/handoffs/F2-formulario-puja.md` | 2026-11-13 |
 | F3 · Catálogo de subastas activas | Terminada | `docs/specs/F3-catalogo-subastas.md` | `docs/handoffs/F3-catalogo-subastas.md` | 2026-11-14 |
-| F4 · Publicar subasta | Por iniciar | `docs/specs/F4-publicar-subasta.md` | Pendiente | - |
+| F4 · Publicar subasta | Terminada | `docs/specs/F4-publicar-subasta.md` | `docs/handoffs/F4-publicar-subasta.md` | 2026-11-14 |
 | F5 · Mis pujas | Por iniciar | `docs/specs/F5-mis-pujas.md` | Pendiente | - |
 | F6 · API y Firestore | Por iniciar | `docs/specs/F6-api-firestore.md` | Pendiente | - |
 | F7 · Transacciones concurrentes y anti-sniper | Por iniciar | `docs/specs/F7-transacciones-anti-sniper.md` | Pendiente | - |

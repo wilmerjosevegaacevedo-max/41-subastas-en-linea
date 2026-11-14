@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,9 +15,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#contenido" className="skip-link">
           Saltar al contenido
         </a>
-        <header className="border-b border-line bg-surface-alt px-4 py-4">
+        <header className="border-b border-line bg-surface-alt px-4 py-3">
           <nav aria-label="Navegación principal" className="mx-auto flex max-w-5xl items-center justify-between">
-            <p className="text-xl font-bold text-primary-strong">Subastas en Línea</p>
+            <Link href="/" className="text-xl font-extrabold tracking-tight text-primary-strong hover:opacity-90">
+              Subastas en Línea
+            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/vender"
+                className="flex min-h-[44px] items-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                + Publicar subasta
+              </Link>
+            </div>
           </nav>
         </header>
         <main id="contenido" className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">

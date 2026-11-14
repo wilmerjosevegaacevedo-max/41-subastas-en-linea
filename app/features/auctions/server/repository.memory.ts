@@ -88,4 +88,9 @@ export class MemoryAuctionRepository implements AuctionRepository {
     }
     return list;
   }
+
+  async create(auction: AuctionDetail): Promise<AuctionDetail> {
+    this.items.set(auction.id, auction);
+    return auction;
+  }
 }
