@@ -1,3 +1,7 @@
+import { AccountService } from "./accounts/server/account-service";
+import type { AccountRepository } from "./accounts/server/repository";
+import { FirestoreAccountRepository } from "./accounts/server/repository.firestore";
+import { createSampleAccounts, MemoryAccountRepository } from "./accounts/server/repository.memory";
 import { AuctionService } from "./auctions/server/auction-service";
 import type { AuctionRepository } from "./auctions/server/repository";
 import { FirestoreAuctionRepository } from "./auctions/server/repository.firestore";
@@ -10,6 +14,7 @@ import { createSampleUserBids, MemoryBidRepository } from "./bids/server/reposit
 export interface AppContainer {
   auctionService: AuctionService;
   bidService: BidService;
+  accountService: AccountService;
 }
 
 function initializeContainer(): AppContainer {
@@ -71,9 +76,20 @@ function initializeContainer(): AppContainer {
 
   const bidService = new BidService({ repository: bidRepository });
 
+  let accountRepository: AccountRepository;
+  if (process.env.USE_FIRESTORE === "true") {
+    accountRepository = new FirestoreAccountRepository();
+  } else {
+    const sampleAccounts = createSampleAccounts();
+    accountRepository = new MemoryAccountRepository(sampleAccounts);
+  }
+
+  const accountService = new AccountService({ repository: accountRepository });
+
   return {
     auctionService,
     bidService,
+    accountService,
   };
 }
 

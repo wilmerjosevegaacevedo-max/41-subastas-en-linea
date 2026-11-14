@@ -6,6 +6,7 @@ import {
 } from "@/features/auctions/schema";
 import { container } from "@/features/container";
 import { errorResponse } from "@/shared/server/http";
+import { readSession } from "@/shared/server/session";
 
 export async function GET(req: Request): Promise<Response> {
   try {
@@ -45,7 +46,18 @@ export async function GET(req: Request): Promise<Response> {
 export async function POST(req: Request): Promise<Response> {
   try {
     const input = CreateAuctionInputSchema.parse(await req.json());
-    const vendedorUid = "vendedor-demo-01";
+    const isProduction = process.env.NODE_ENV === "production";
+    const session = await readSession(req, container.accountService, isProduction);
+    let vendedorUid = "vendedor-demo-01";
+    if (session !== null) {
+      vendedorUid = session.uid;
+    } else {
+      const headerUid = req.headers.get("x-user-uid");
+      if (headerUid !== null && headerUid.trim() !== "") {
+        vendedorUid = headerUid.trim();
+      }
+    }
+
     const subasta = await container.auctionService.createAuction(input, vendedorUid, new Date());
     const payload = {
       subasta,

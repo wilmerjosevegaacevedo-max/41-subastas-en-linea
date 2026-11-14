@@ -63,7 +63,11 @@ function readCookie(header: string, name: string): string | null {
     if (key === name) {
       const val = parts.join("=");
       if (val !== "") {
-        return val;
+        try {
+          return decodeURIComponent(val);
+        } catch {
+          return val;
+        }
       }
       return null;
     }

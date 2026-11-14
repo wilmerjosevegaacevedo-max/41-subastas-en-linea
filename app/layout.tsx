@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { SessionStatusBadge } from "@/features/accounts/ui/session-status-badge";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               >
                 + Publicar subasta
               </Link>
+              <SessionStatusBadge />
             </div>
           </nav>
         </header>

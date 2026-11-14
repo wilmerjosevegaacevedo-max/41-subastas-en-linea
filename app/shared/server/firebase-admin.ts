@@ -1,9 +1,11 @@
 import { type App, cert, getApps, initializeApp } from "firebase-admin/app";
+import { type Auth, getAuth } from "firebase-admin/auth";
 import { type Firestore, getFirestore } from "firebase-admin/firestore";
 import { DomainError } from "./errors";
 
 let adminApp: App | null = null;
 let firestoreDb: Firestore | null = null;
+let adminAuth: Auth | null = null;
 
 export function getFirebaseAdminApp(): App {
   if (adminApp !== null) {
@@ -46,4 +48,14 @@ export function getFirestoreDb(): Firestore {
   const app = getFirebaseAdminApp();
   firestoreDb = getFirestore(app);
   return firestoreDb;
+}
+
+export function getFirebaseAuth(): Auth {
+  if (adminAuth !== null) {
+    return adminAuth;
+  }
+
+  const app = getFirebaseAdminApp();
+  adminAuth = getAuth(app);
+  return adminAuth;
 }

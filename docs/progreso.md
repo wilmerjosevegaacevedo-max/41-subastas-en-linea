@@ -10,6 +10,6 @@
 | F5 · Mis pujas | Terminada | `docs/specs/F5-mis-pujas.md` | `docs/handoffs/F5-mis-pujas.md` | 2026-11-14 |
 | F6 · API y Firestore | Terminada | `docs/specs/F6-api-firestore.md` | `docs/handoffs/F6-api-firestore.md` | 2026-11-14 |
 | F7 · Transacciones concurrentes y anti-sniper | Terminada | `docs/specs/F7-transacciones-anti-sniper.md` | `docs/handoffs/F7-transacciones-anti-sniper.md` | 2026-11-14 |
-| F8 · Autenticación y sesión HttpOnly | Por iniciar | `docs/specs/F8-autenticacion-sesion.md` | Pendiente | - |
+| F8 · Autenticación y sesión HttpOnly | Terminada | `docs/specs/F8-autenticacion-sesion.md` | `docs/handoffs/F8-autenticacion-sesion.md` | 2026-11-14 |
 | F9 · Subida de fotos Vercel Blob | Por iniciar | `docs/specs/F9-fotos-blob.md` | Pendiente | - |
 | F10 · Calidad y Despliegue | Por iniciar | `docs/specs/F10-calidad-despliegue.md` | Pendiente | - |
