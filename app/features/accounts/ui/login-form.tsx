@@ -168,11 +168,12 @@ export function LoginForm() {
         }}
       />
 
-      <div className="relative my-6 flex items-center justify-center">
-        <div className="w-full border-t border-line" />
-        <strong className="absolute px-3 bg-surface text-xs text-ink-muted font-medium uppercase tracking-widest">
+      <div className="my-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-line" />
+        <p className="text-xs text-ink-muted font-medium uppercase tracking-widest whitespace-nowrap">
           O con credenciales
-        </strong>
+        </p>
+        <div className="h-px flex-1 bg-line" />
       </div>
 
       <CredentialsForm
