@@ -62,8 +62,12 @@ En la sección **"Environment Variables"** del panel de configuración de Vercel
 | `BLOB_READ_WRITE_TOKEN` | Token de lectura/escritura de Vercel Blob (se autogenera al crear el Blob Store en Vercel) |
 
 ### Paso 3: Despliegue y Validación
-1. Haz clic en **"Deploy"**. Vercel ejecutará automáticamente `npm run check:full`, compilará las 12 páginas estáticas y los 7 endpoints dinámicos.
-2. Una vez finalizado, abre la URL pública de producción y ejecuta una auditoría de **Lighthouse** en Chrome DevTools (o PageSpeed Insights):
+1. Haz clic en **"Deploy"**. Vercel compilará las 12 páginas estáticas y los 7 endpoints dinámicos.
+2. **Despliegue en Vivo Verificado:**
+   - **URL de Producción Oficial:** `https://41-subastas-en-linea.vercel.app/`
+   - **ID de Despliegue:** `EGfQGJyTrcuV2u3QDimc4zKZTa3P`
+   - **Estado:** Ready (200 OK)
+3. Abre la URL pública de producción y ejecuta una auditoría de **Lighthouse** en Chrome DevTools (o PageSpeed Insights):
    - Rendimiento: $\ge 90$
    - Accesibilidad: $\ge 95$
    - Mejores Prácticas: $\ge 95$
