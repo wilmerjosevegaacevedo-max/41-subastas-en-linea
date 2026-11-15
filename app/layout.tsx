@@ -5,8 +5,22 @@ import { SessionStatusBadge } from "@/features/accounts/ui/session-status-badge"
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Subastas en línea con pujas y cuenta regresiva",
-  description: "Subastas con pujas en tiempo casi real, cuenta regresiva y cierre automático.",
+  title: "Subastas en Línea · Pujas en tiempo real y cuenta regresiva",
+  description:
+    "Plataforma de subastas en línea con pujas atómicas, extensiones anti-francotirador y cuenta regresiva viva sincronizada.",
+  keywords: ["subastas", "pujas", "reloj", "cuenta regresiva", "ecommerce", "artículos vintage"],
+  authors: [{ name: "Tendencias - Antigravity" }],
+  openGraph: {
+    title: "Subastas en Línea · Pujas y Cuenta Regresiva",
+    description: "Participa en subastas activas con pujas en vivo y cuenta regresiva sincronizada.",
+    type: "website",
+    locale: "es_CO",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Subastas en Línea",
+    description: "Subastas en vivo con extensiones automáticas y cierre transparente.",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
