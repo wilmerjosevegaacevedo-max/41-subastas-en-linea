@@ -47,14 +47,14 @@ export function SessionStatusBadge() {
   };
 
   if (!isLoaded) {
-    return <div className="h-8 w-24 rounded bg-stone-800 animate-pulse" aria-hidden="true" />;
+    return <div className="h-8 w-24 rounded bg-surface-strong animate-pulse" aria-hidden="true" />;
   }
 
   if (user === null) {
     return (
       <Link
         href="/login"
-        className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-stone-950 font-semibold text-xs tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+        className="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-95 text-white font-semibold text-xs tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         Iniciar Sesión
       </Link>
@@ -64,13 +64,13 @@ export function SessionStatusBadge() {
   return (
     <div className="flex items-center gap-2.5">
       <div className="flex flex-col text-right">
-        <p className="text-xs font-medium text-stone-200 leading-tight">{user.nombre}</p>
-        <p className="text-[10px] text-amber-400 uppercase tracking-wider font-semibold">{user.rol}</p>
+        <p className="text-xs font-semibold text-ink leading-tight">{user.nombre}</p>
+        <p className="text-[10px] text-primary uppercase tracking-wider font-bold">{user.rol}</p>
       </div>
       <button
         type="button"
         onClick={() => void handleLogout()}
-        className="px-2.5 py-1 rounded bg-stone-800 hover:bg-stone-700 active:scale-95 text-stone-300 hover:text-stone-100 text-xs transition-all border border-stone-700"
+        className="px-2.5 py-1.5 rounded-md bg-surface hover:bg-surface-alt active:scale-95 text-ink-muted hover:text-ink text-xs font-medium transition-all border border-line"
         title="Cerrar Sesión"
       >
         Salir

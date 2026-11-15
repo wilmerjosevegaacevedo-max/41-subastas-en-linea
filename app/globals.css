@@ -6,6 +6,8 @@
   --breakpoint-lg: 64rem;
 
   --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
   --color-surface: #ffffff;
   --color-surface-alt: #f8fafc;
   --color-surface-strong: #e2e8f0;
