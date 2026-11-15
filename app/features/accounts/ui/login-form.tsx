@@ -11,8 +11,8 @@ interface DemoAccountsProps {
 
 function DemoAccountsSection({ isLoading, onSelectDemo }: DemoAccountsProps) {
   return (
-    <div className="mb-6 p-4 rounded-xl bg-stone-950 border border-amber-500/30">
-      <p className="text-xs font-semibold text-amber-400 tracking-wider uppercase mb-3">
+    <div className="mb-6 p-4 rounded-xl bg-surface-alt border border-line">
+      <p className="text-xs font-semibold text-primary tracking-wider uppercase mb-3">
         Acceso Rápido para Pruebas y Evaluación
       </p>
       <div className="flex flex-col gap-2.5">
@@ -20,7 +20,7 @@ function DemoAccountsSection({ isLoading, onSelectDemo }: DemoAccountsProps) {
           type="button"
           disabled={isLoading}
           onClick={() => onSelectDemo("comprador-demo-01")}
-          className="w-full py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-[0.98] text-stone-950 font-medium text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50"
+          className="w-full py-2.5 px-4 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-medium text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
         >
           Entrar como Comprador Demo (Carlos)
         </button>
@@ -28,7 +28,7 @@ function DemoAccountsSection({ isLoading, onSelectDemo }: DemoAccountsProps) {
           type="button"
           disabled={isLoading}
           onClick={() => onSelectDemo("vendedor-demo-01")}
-          className="w-full py-2.5 px-4 rounded-lg bg-stone-800 hover:bg-stone-700 active:scale-[0.98] text-stone-200 font-medium text-sm transition-all border border-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-50"
+          className="w-full py-2.5 px-4 rounded-lg bg-surface hover:bg-surface-strong active:scale-[0.98] text-ink font-medium text-sm transition-all border border-control-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
         >
           Entrar como Vendedor Demo (Valeria)
         </button>
@@ -59,13 +59,13 @@ function CredentialsForm({
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       {errorMessage !== null && (
-        <div role="alert" className="p-3 rounded-lg bg-red-950/80 border border-red-800 text-red-300 text-xs">
+        <div role="alert" className="p-3 rounded-lg bg-red-50 border border-danger/30 text-danger text-xs">
           <p>{errorMessage}</p>
         </div>
       )}
 
       <div>
-        <label htmlFor="login-email" className="block text-xs font-medium text-stone-300 mb-1.5">
+        <label htmlFor="login-email" className="block text-xs font-medium text-ink-muted mb-1.5">
           Correo Electrónico
         </label>
         <input
@@ -75,12 +75,12 @@ function CredentialsForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="tu-correo@ejemplo.com"
-          className="w-full px-3.5 py-2.5 rounded-lg bg-stone-950 border border-stone-800 text-stone-100 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+          className="w-full px-3.5 py-2.5 rounded-lg bg-surface border border-control-border text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-primary text-sm"
         />
       </div>
 
       <div>
-        <label htmlFor="login-password" className="block text-xs font-medium text-stone-300 mb-1.5">
+        <label htmlFor="login-password" className="block text-xs font-medium text-ink-muted mb-1.5">
           Contraseña
         </label>
         <input
@@ -90,14 +90,14 @@ function CredentialsForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
-          className="w-full px-3.5 py-2.5 rounded-lg bg-stone-950 border border-stone-800 text-stone-100 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+          className="w-full px-3.5 py-2.5 rounded-lg bg-surface border border-control-border text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-primary text-sm"
         />
       </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="mt-2 w-full py-2.5 px-4 rounded-lg bg-stone-100 hover:bg-white active:scale-[0.98] text-stone-950 font-semibold text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 disabled:opacity-50"
+        className="mt-2 w-full py-2.5 px-4 rounded-lg bg-ink hover:bg-slate-800 active:scale-[0.98] text-white font-semibold text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
       >
         Acceder con Correo
       </button>
@@ -155,10 +155,10 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 md:p-8 rounded-2xl bg-stone-900 border border-stone-800 shadow-xl text-stone-100">
+    <div className="w-full max-w-md mx-auto p-6 md:p-8 rounded-2xl bg-surface border border-line shadow-lg text-ink">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-amber-400">Iniciar Sesión</h1>
-        <p className="mt-2 text-sm text-stone-400">Ingresa a tu cuenta para realizar pujas o publicar tus subastas</p>
+        <h1 className="text-2xl font-bold tracking-tight text-ink">Iniciar Sesión</h1>
+        <p className="mt-2 text-sm text-ink-muted">Ingresa a tu cuenta para realizar pujas o publicar tus subastas</p>
       </div>
 
       <DemoAccountsSection
@@ -169,8 +169,8 @@ export function LoginForm() {
       />
 
       <div className="relative my-6 flex items-center justify-center">
-        <div className="w-full border-t border-stone-800" />
-        <strong className="absolute px-3 bg-stone-900 text-xs text-stone-500 font-normal uppercase tracking-widest">
+        <div className="w-full border-t border-line" />
+        <strong className="absolute px-3 bg-surface text-xs text-ink-muted font-medium uppercase tracking-widest">
           O con credenciales
         </strong>
       </div>
