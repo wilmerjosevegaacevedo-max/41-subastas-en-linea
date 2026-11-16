@@ -11,19 +11,27 @@ interface RouteContext {
 }
 
 export async function GET(_req: Request, context: RouteContext): Promise<Response> {
+  const requestId = crypto.randomUUID();
   try {
     const { id } = await context.params;
-    const subasta = await container.auctionService.getAuctionById(id);
+    const now = new Date();
+    const subasta = await container.auctionService.getAuctionById(id, now);
     const payload = {
       subasta,
     };
-    return Response.json(AuctionDetailResponseSchema.parse(payload));
+    const res = Response.json(AuctionDetailResponseSchema.parse(payload));
+    res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.headers.set("x-request-id", requestId);
+    return res;
   } catch (error) {
-    return errorResponse(error);
+    const errRes = errorResponse(error);
+    errRes.headers.set("x-request-id", requestId);
+    return errRes;
   }
 }
 
 export async function PATCH(req: Request, context: RouteContext): Promise<Response> {
+  const requestId = crypto.randomUUID();
   try {
     const { id } = await context.params;
     const input = UpdateAuctionInputSchema.parse(await req.json());
@@ -36,13 +44,20 @@ export async function PATCH(req: Request, context: RouteContext): Promise<Respon
     const payload = {
       subasta,
     };
-    return Response.json(AuctionDetailResponseSchema.parse(payload));
+    const res = Response.json(AuctionDetailResponseSchema.parse(payload));
+    res.headers.set("Cache-Control", "no-store");
+    res.headers.set("x-request-id", requestId);
+    return res;
   } catch (error) {
-    return errorResponse(error);
+    const errRes = errorResponse(error);
+    errRes.headers.set("Cache-Control", "no-store");
+    errRes.headers.set("x-request-id", requestId);
+    return errRes;
   }
 }
 
 export async function DELETE(req: Request, context: RouteContext): Promise<Response> {
+  const requestId = crypto.randomUUID();
   try {
     const { id } = await context.params;
     let userUid = "vendedor-demo-01";
@@ -56,8 +71,14 @@ export async function DELETE(req: Request, context: RouteContext): Promise<Respo
       subasta_id: subasta.id,
       estado: subasta.estado,
     };
-    return Response.json(DeleteAuctionResponseSchema.parse(payload));
+    const res = Response.json(DeleteAuctionResponseSchema.parse(payload));
+    res.headers.set("Cache-Control", "no-store");
+    res.headers.set("x-request-id", requestId);
+    return res;
   } catch (error) {
-    return errorResponse(error);
+    const errRes = errorResponse(error);
+    errRes.headers.set("Cache-Control", "no-store");
+    errRes.headers.set("x-request-id", requestId);
+    return errRes;
   }
 }

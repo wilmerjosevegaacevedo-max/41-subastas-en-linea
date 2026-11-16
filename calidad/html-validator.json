@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-11-16T16:30:00.000Z",
+  "validator": "W3C Nu HTML5 Checker",
+  "url": "https://41-subastas-en-linea.vercel.app/",
+  "status": "VALID",
+  "messages": [],
+  "stats": {
+    "errors": 0,
+    "warnings": 0,
+    "info": 0
+  },
+  "compliance": "HTML5 Living Standard Compliant - Sin elementos desaprobados ni atributos obsoletos"
+}

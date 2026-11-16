@@ -41,12 +41,40 @@ export class AuctionService {
     this.repository = dependencies.repository;
   }
 
-  async getAuctionById(id: string): Promise<AuctionDetail> {
+  async getAuctionById(id: string, now?: Date): Promise<AuctionDetail> {
     const auction = await this.repository.findById(id);
     if (auction === null) {
       throw new DomainError("NOT_FOUND", "La subasta solicitada no existe");
     }
+    let currentTime = new Date();
+    if (now !== undefined) {
+      currentTime = now;
+    }
+    if (auction.estado === "activa" && currentTime.getTime() >= new Date(auction.cierra_en).getTime()) {
+      const closed: AuctionDetail = {
+        ...auction,
+        estado: "cerrada",
+      };
+      await this.repository.create(closed);
+      return closed;
+    }
     return auction;
+  }
+
+  async closeExpiredAuctions(now: Date): Promise<number> {
+    const all = await this.repository.listActive();
+    let count = 0;
+    for (const a of all) {
+      if (now.getTime() >= new Date(a.cierra_en).getTime()) {
+        const closed: AuctionDetail = {
+          ...a,
+          estado: "cerrada",
+        };
+        await this.repository.create(closed);
+        count += 1;
+      }
+    }
+    return count;
   }
 
   async getActiveAuctions(): Promise<AuctionDetail[]> {

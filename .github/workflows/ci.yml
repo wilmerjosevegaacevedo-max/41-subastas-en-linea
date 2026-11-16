@@ -1,0 +1,43 @@
+name: Integración Continua (CI)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verificacion:
+    name: Verificación de Código, Tipos, Pruebas y Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Verificar formato (Biome)
+        run: npm run format:check
+
+      - name: Análisis estático (ESLint)
+        run: npm run lint
+
+      - name: Verificación de tipos TypeScript
+        run: npm run typecheck
+
+      - name: Ejecutar pruebas unitarias y de componentes (Vitest)
+        run: npm run test
+
+      - name: Cobertura de pruebas (Vitest Coverage)
+        run: npx vitest run --coverage
+
+      - name: Compilación de producción (Next.js Build)
+        run: npm run build

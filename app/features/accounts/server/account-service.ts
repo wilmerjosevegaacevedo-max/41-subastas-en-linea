@@ -65,6 +65,14 @@ export class AccountService implements SessionVerifier {
   private async handleFirebaseIdToken(idToken: string): Promise<{ user: AccountUser; sessionToken: string }> {
     const auth = getFirebaseAuth();
     const decoded = await auth.verifyIdToken(idToken);
+
+    let rol: "COMPRADOR" | "VENDEDOR" | "ADMINISTRADOR" = "COMPRADOR";
+    if (decoded.rol === "VENDEDOR") {
+      rol = "VENDEDOR";
+    } else if (decoded.rol === "ADMINISTRADOR") {
+      rol = "ADMINISTRADOR";
+    }
+
     let email = `${decoded.uid}@subastas.com`;
     if (typeof decoded.email === "string" && decoded.email.trim() !== "") {
       email = decoded.email.trim();
@@ -80,7 +88,7 @@ export class AccountService implements SessionVerifier {
         uid: decoded.uid,
         email,
         nombre,
-        rol: "COMPRADOR",
+        rol,
       });
     }
 
@@ -108,11 +116,19 @@ export class AccountService implements SessionVerifier {
     try {
       const auth = getFirebaseAuth();
       const decoded = await auth.verifySessionCookie(token, true);
-      const user = await this.repository.findByUid(decoded.uid);
-      let role = user?.rol;
-      if (role === undefined) {
-        role = "COMPRADOR";
+
+      let role: "COMPRADOR" | "VENDEDOR" | "ADMINISTRADOR" = "COMPRADOR";
+      if (decoded.rol === "VENDEDOR") {
+        role = "VENDEDOR";
+      } else if (decoded.rol === "ADMINISTRADOR") {
+        role = "ADMINISTRADOR";
+      } else {
+        const user = await this.repository.findByUid(decoded.uid);
+        if (user !== null) {
+          role = user.rol;
+        }
       }
+
       let email: string | undefined = undefined;
       if (typeof decoded.email === "string") {
         email = decoded.email;

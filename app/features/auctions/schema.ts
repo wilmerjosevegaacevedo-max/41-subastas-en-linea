@@ -51,11 +51,23 @@ export const AuctionListQuerySchema = z.object({
   estado: AuctionStatusSchema.optional(),
   q: z.string().trim().max(100).optional(),
   limite: z.coerce.number().int().min(1).max(50).default(20),
+  cursor: z.string().optional(),
 });
 
 export const AuctionListResponseSchema = z.object({
   subastas: z.array(AuctionDetailSchema),
   total: z.number().int().nonnegative(),
+  siguiente_cursor: z.string().nullable().optional(),
+});
+
+export const AuctionStateResponseSchema = z.object({
+  subasta_id: z.string().min(1),
+  puja_actual_centavos: z.number().int().positive(),
+  incremento_centavos: z.number().int().positive(),
+  cierra_en: z.string().datetime(),
+  estado: AuctionStatusSchema,
+  ganador_uid: z.string().nullable(),
+  tiempo_servidor: z.string().datetime(),
 });
 
 export const UpdateAuctionInputSchema = z.object({
@@ -101,3 +113,4 @@ export type UpdateAuctionInput = z.infer<typeof UpdateAuctionInputSchema>;
 export type AuctionDetailResponse = z.infer<typeof AuctionDetailResponseSchema>;
 export type DeleteAuctionResponse = z.infer<typeof DeleteAuctionResponseSchema>;
 export type UploadPhotoResponse = z.infer<typeof UploadPhotoResponseSchema>;
+export type AuctionStateResponse = z.infer<typeof AuctionStateResponseSchema>;

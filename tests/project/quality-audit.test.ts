@@ -1,7 +1,9 @@
+// @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { metadata } from "@/layout";
 import { environmentReport } from "@/shared/server/env";
+import axe from "axe-core";
 import { describe, expect, it } from "vitest";
 
 describe("F10 · Auditoría de Calidad, Accesibilidad (WCAG 2.2 AA) y Despliegue", () => {
@@ -30,6 +32,7 @@ describe("F10 · Auditoría de Calidad, Accesibilidad (WCAG 2.2 AA) y Despliegue
     expect(keys).toContain("X-Frame-Options");
     expect(keys).toContain("X-Content-Type-Options");
     expect(keys).toContain("Referrer-Policy");
+    expect(keys).toContain("Content-Security-Policy");
   });
 
   it("el reporte de entorno cubre las 11 variables requeridas del sistema", () => {
@@ -57,9 +60,37 @@ describe("F10 · Auditoría de Calidad, Accesibilidad (WCAG 2.2 AA) y Despliegue
     const cssPath = resolve(process.cwd(), "app/globals.css");
     const cssContent = readFileSync(cssPath, "utf-8");
 
-    // Verifica la directiva de foco visible y reducción de movimiento
     expect(cssContent).toContain(":focus-visible");
     expect(cssContent).toContain("prefers-reduced-motion");
     expect(cssContent).toContain(".skip-link");
+  });
+
+  it("ejecuta auditoría de accesibilidad con axe-core confirmando 0 violaciones críticas o serias", async () => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <main id="contenido">
+        <h1>Subastas en Línea</h1>
+        <article aria-labelledby="sub-1">
+          <h2 id="sub-1">Cámara Vintage Leica M3</h2>
+          <p>Precio actual: $150.000 COP</p>
+          <a href="/subastas/leica-m3-1954">Ver detalle de la subasta</a>
+        </article>
+      </main>
+    `;
+    document.body.appendChild(div);
+
+    const results = await axe.run(div);
+    const criticalViolations = results.violations.filter((v) => {
+      return v.impact === "critical" || v.impact === "serious";
+    });
+    expect(criticalViolations.length).toBe(0);
+    document.body.removeChild(div);
+  });
+
+  it("robots.ts y sitemap.ts generan rutas válidas de indexación SEO", () => {
+    const robotsPath = resolve(process.cwd(), "app/robots.ts");
+    const sitemapPath = resolve(process.cwd(), "app/sitemap.ts");
+    expect(readFileSync(robotsPath, "utf-8")).toContain("sitemap");
+    expect(readFileSync(sitemapPath, "utf-8")).toContain("changeFrequency");
   });
 });

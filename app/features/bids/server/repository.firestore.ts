@@ -8,15 +8,58 @@ export interface FirestoreBidAdapter {
   runBidTransaction(params: PlaceBidTransactionParams): Promise<PlaceBidTransactionResult>;
 }
 
+interface FirestoreBidDoc {
+  subastaId?: string;
+  subastaTitulo?: string;
+  subastaFoto?: string;
+  miPujaCentavos?: number;
+  pujaActualCentavos?: number;
+  cierraEn?: string;
+  estadoSubasta?: string;
+  estadoParticipacion?: string;
+  fechaPuja?: string;
+  subasta_id?: string;
+  subasta_titulo?: string;
+  subasta_foto?: string;
+  mi_puja_centavos?: number;
+  puja_actual_centavos?: number;
+  cierra_en?: string;
+  estado_subasta?: string;
+  estado_participacion?: string;
+  fecha_puja?: string;
+}
+
 export class DefaultFirestoreBidAdapter implements FirestoreBidAdapter {
   async listBidsByUser(bidderUid: string): Promise<UserBidSummary[]> {
     const db = getFirestoreDb();
-    const snapshot = await db.collection("users").doc(bidderUid).collection("bids").orderBy("fecha_puja", "desc").get();
+    const snapshot = await db
+      .collection("usuarios")
+      .doc(bidderUid)
+      .collection("pujas")
+      .orderBy("fechaPuja", "desc")
+      .get();
 
     const items: UserBidSummary[] = [];
     for (const doc of snapshot.docs) {
-      const data = doc.data() as UserBidSummary;
-      items.push(data);
+      const data = doc.data() as FirestoreBidDoc;
+      let estadoSubasta: "activa" | "cerrada" = "activa";
+      if (data.estadoSubasta === "cerrada" || data.estado_subasta === "cerrada") {
+        estadoSubasta = "cerrada";
+      }
+
+      items.push({
+        subasta_id: String(data.subastaId ?? data.subasta_id ?? ""),
+        subasta_titulo: String(data.subastaTitulo ?? data.subasta_titulo ?? ""),
+        subasta_foto: String(data.subastaFoto ?? data.subasta_foto ?? ""),
+        mi_puja_centavos: Number(data.miPujaCentavos ?? data.mi_puja_centavos ?? 0),
+        puja_actual_centavos: Number(data.pujaActualCentavos ?? data.puja_actual_centavos ?? 0),
+        cierra_en: String(data.cierraEn ?? data.cierra_en ?? ""),
+        estado_subasta: estadoSubasta,
+        estado_participacion: (data.estadoParticipacion ??
+          data.estado_participacion ??
+          "ganando") as UserBidSummary["estado_participacion"],
+        fecha_puja: String(data.fechaPuja ?? data.fecha_puja ?? ""),
+      });
     }
     return items;
   }
@@ -25,7 +68,7 @@ export class DefaultFirestoreBidAdapter implements FirestoreBidAdapter {
     const db = getFirestoreDb();
 
     return db.runTransaction(async (transaction) => {
-      const auctionRef = db.collection("auctions").doc(params.auctionId);
+      const auctionRef = db.collection("subastas").doc(params.auctionId);
       const auctionDoc = await transaction.get(auctionRef);
 
       if (!auctionDoc.exists) {
@@ -42,21 +85,25 @@ export class DefaultFirestoreBidAdapter implements FirestoreBidAdapter {
         throw new DomainError("CONFLICT", "La subasta no está activa");
       }
 
-      const cierraEnStr = String(auctionData.cierra_en ?? "");
+      const cierraEnStr = String(auctionData.cierraEn ?? auctionData.cierra_en ?? "");
       const cierraEnMs = new Date(cierraEnStr).getTime();
       if (cierraEnMs <= params.now.getTime()) {
         throw new DomainError("EXPIRED", "La subasta ya ha finalizado");
       }
 
-      const vendedorUid = String(auctionData.vendedor_uid ?? "");
+      const vendedorUid = String(auctionData.vendedorUid ?? auctionData.vendedor_uid ?? "");
       if (vendedorUid === params.bidderUid) {
         throw new DomainError("FORBIDDEN", "No puedes pujar en tu propia subasta");
       }
 
-      const precioInicialCentavos = Number(auctionData.precio_inicial_centavos ?? 0);
-      const pujaActualCentavos = Number(auctionData.puja_actual_centavos ?? precioInicialCentavos);
-      const incrementoCentavos = Number(auctionData.incremento_centavos ?? 100000);
-      const ganadorUid = auctionData.ganador_uid as string | null;
+      const precioInicialCentavos = Number(
+        auctionData.precioInicialCentavos ?? auctionData.precio_inicial_centavos ?? 0,
+      );
+      const pujaActualCentavos = Number(
+        auctionData.pujaActualCentavos ?? auctionData.puja_actual_centavos ?? precioInicialCentavos,
+      );
+      const incrementoCentavos = Number(auctionData.incrementoCentavos ?? auctionData.incremento_centavos ?? 100000);
+      const ganadorUid = (auctionData.ganadorUid ?? auctionData.ganador_uid ?? null) as string | null;
 
       let minRequired = precioInicialCentavos;
       if (ganadorUid !== null) {
@@ -78,13 +125,19 @@ export class DefaultFirestoreBidAdapter implements FirestoreBidAdapter {
       }
 
       transaction.update(auctionRef, {
-        puja_actual_centavos: params.montoCentavos,
-        ganador_uid: params.bidderUid,
-        cierra_en: nuevoCierraEn,
+        pujaActualCentavos: params.montoCentavos,
+        ganadorUid: params.bidderUid,
+        cierraEn: nuevoCierraEn,
       });
 
-      const bidDocRef = auctionRef.collection("bids").doc();
+      const bidDocRef = auctionRef.collection("pujas").doc();
       const bidId = bidDocRef.id;
+
+      transaction.set(bidDocRef, {
+        uid: params.bidderUid,
+        montoCentavos: params.montoCentavos,
+        creadaEn: params.now.toISOString(),
+      });
 
       const bid: BidItem = {
         id: bidId,
@@ -93,8 +146,6 @@ export class DefaultFirestoreBidAdapter implements FirestoreBidAdapter {
         monto_centavos: params.montoCentavos,
         creada_en: params.now.toISOString(),
       };
-
-      transaction.set(bidDocRef, bid);
 
       const updatedAuction: AuctionUpdatedSnapshot = {
         id: params.auctionId,

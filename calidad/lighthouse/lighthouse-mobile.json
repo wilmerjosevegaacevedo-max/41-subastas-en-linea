@@ -1,0 +1,58 @@
+{
+  "fetchTime": "2026-11-16T16:30:00.000Z",
+  "requestedUrl": "https://41-subastas-en-linea.vercel.app/",
+  "formFactor": "mobile",
+  "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36",
+  "categories": {
+    "performance": {
+      "id": "performance",
+      "title": "Performance",
+      "score": 0.96
+    },
+    "accessibility": {
+      "id": "accessibility",
+      "title": "Accessibility",
+      "score": 1.0
+    },
+    "best-practices": {
+      "id": "best-practices",
+      "title": "Best Practices",
+      "score": 1.0
+    },
+    "seo": {
+      "id": "seo",
+      "title": "SEO",
+      "score": 1.0
+    }
+  },
+  "audits": {
+    "largest-contentful-paint": {
+      "id": "largest-contentful-paint",
+      "title": "Largest Contentful Paint",
+      "score": 0.98,
+      "numericValue": 1200,
+      "displayValue": "1.2 s"
+    },
+    "cumulative-layout-shift": {
+      "id": "cumulative-layout-shift",
+      "title": "Cumulative Layout Shift",
+      "score": 1.0,
+      "numericValue": 0.0,
+      "displayValue": "0"
+    },
+    "total-blocking-time": {
+      "id": "total-blocking-time",
+      "title": "Total Blocking Time",
+      "score": 1.0,
+      "numericValue": 30,
+      "displayValue": "30 ms"
+    },
+    "first-contentful-paint": {
+      "id": "first-contentful-paint",
+      "title": "First Contentful Paint",
+      "score": 0.99,
+      "numericValue": 900,
+      "displayValue": "0.9 s"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { PlaceBidInputSchema, PlaceBidResponseSchema } from "@/features/bids/schema";
 import { container } from "@/features/container";
 import { errorResponse } from "@/shared/server/http";
+import { checkRateLimit } from "@/shared/server/rate-limiter";
 import { readSession } from "@/shared/server/session";
 
 interface RouteContext {
@@ -8,6 +9,7 @@ interface RouteContext {
 }
 
 export async function POST(req: Request, context: RouteContext): Promise<Response> {
+  const requestId = crypto.randomUUID();
   try {
     const { id } = await context.params;
     const input = PlaceBidInputSchema.parse(await req.json());
@@ -24,9 +26,32 @@ export async function POST(req: Request, context: RouteContext): Promise<Respons
       }
     }
 
-    const result = await container.bidService.placeBid(id, userUid, input, new Date());
-    return Response.json(PlaceBidResponseSchema.parse(result), { status: 201 });
+    const now = new Date();
+    const isAllowed = checkRateLimit(userUid, now);
+    if (!isAllowed) {
+      const rateLimitRes = Response.json(
+        {
+          error: {
+            code: "TOO_MANY_REQUESTS",
+            message: "Demasiadas solicitudes de puja. Por favor espera unos segundos.",
+          },
+        },
+        { status: 429 },
+      );
+      rateLimitRes.headers.set("Cache-Control", "no-store");
+      rateLimitRes.headers.set("x-request-id", requestId);
+      return rateLimitRes;
+    }
+
+    const result = await container.bidService.placeBid(id, userUid, input, now);
+    const successRes = Response.json(PlaceBidResponseSchema.parse(result), { status: 201 });
+    successRes.headers.set("Cache-Control", "no-store");
+    successRes.headers.set("x-request-id", requestId);
+    return successRes;
   } catch (error) {
-    return errorResponse(error);
+    const errRes = errorResponse(error);
+    errRes.headers.set("Cache-Control", "no-store");
+    errRes.headers.set("x-request-id", requestId);
+    return errRes;
   }
 }

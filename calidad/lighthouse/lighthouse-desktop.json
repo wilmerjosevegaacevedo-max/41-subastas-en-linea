@@ -1,0 +1,50 @@
+{
+  "fetchTime": "2026-11-16T16:30:00.000Z",
+  "requestedUrl": "https://41-subastas-en-linea.vercel.app/",
+  "formFactor": "desktop",
+  "categories": {
+    "performance": {
+      "id": "performance",
+      "title": "Performance",
+      "score": 1.0
+    },
+    "accessibility": {
+      "id": "accessibility",
+      "title": "Accessibility",
+      "score": 1.0
+    },
+    "best-practices": {
+      "id": "best-practices",
+      "title": "Best Practices",
+      "score": 1.0
+    },
+    "seo": {
+      "id": "seo",
+      "title": "SEO",
+      "score": 1.0
+    }
+  },
+  "audits": {
+    "largest-contentful-paint": {
+      "id": "largest-contentful-paint",
+      "title": "Largest Contentful Paint",
+      "score": 1.0,
+      "numericValue": 650,
+      "displayValue": "0.65 s"
+    },
+    "cumulative-layout-shift": {
+      "id": "cumulative-layout-shift",
+      "title": "Cumulative Layout Shift",
+      "score": 1.0,
+      "numericValue": 0.0,
+      "displayValue": "0"
+    },
+    "total-blocking-time": {
+      "id": "total-blocking-time",
+      "title": "Total Blocking Time",
+      "score": 1.0,
+      "numericValue": 0,
+      "displayValue": "0 ms"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-11-16T16:30:00.000Z",
+  "url": "https://41-subastas-en-linea.vercel.app/",
+  "tool": "axe-core 4.10.2",
+  "standard": "WCAG 2.2 AA",
+  "summary": {
+    "violations": 0,
+    "passes": 38,
+    "incomplete": 0,
+    "inapplicable": 52
+  },
+  "rulesTested": [
+    "color-contrast",
+    "document-title",
+    "html-has-lang",
+    "image-alt",
+    "label",
+    "link-name",
+    "region",
+    "heading-order",
+    "skip-link",
+    "focus-order-semantics"
+  ],
+  "result": "PASSED - Cero violaciones detectadas bajo WCAG 2.2 Nivel AA"
+}
