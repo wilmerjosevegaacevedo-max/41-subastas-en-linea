@@ -1,0 +1,22 @@
+meta {
+  name: Realizar puja atómica
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/subastas/subasta-vintage-01/pujas
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-user-uid: comprador-demo-01
+}
+
+body:json {
+  {
+    "monto_centavos": 20000000
+  }
+}

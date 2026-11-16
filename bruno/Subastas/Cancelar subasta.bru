@@ -1,0 +1,15 @@
+meta {
+  name: Cancelar subasta
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/api/subastas/subasta-laptop-02
+  body: none
+  auth: none
+}
+
+headers {
+  x-user-uid: vendedor-tech-01
+}

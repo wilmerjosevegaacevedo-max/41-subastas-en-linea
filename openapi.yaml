@@ -1,0 +1,732 @@
+openapi: 3.0.3
+info:
+  title: 41 · Subastas en línea con pujas y cuenta regresiva
+  description: >
+    API REST de la plataforma de subastas con pujas atómicas, extensiones
+    anti-francotirador (+60s en el último minuto), cuenta regresiva sincronizada,
+    autenticación con cookies HttpOnly y subida directa a Vercel Blob.
+  version: 1.0.0
+servers:
+  - url: https://41-subastas-en-linea.vercel.app
+    description: Servidor de producción en Vercel
+  - url: http://localhost:3000
+    description: Servidor de desarrollo local
+
+paths:
+  /api/subastas:
+    get:
+      summary: Listar subastas con filtros y búsqueda
+      description: Retorna el catálogo de subastas filtradas por estado, búsqueda de texto libre y límite de paginación.
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          description: Filtrar por estado de la subasta
+          schema:
+            $ref: '#/components/schemas/AuctionStatus'
+        - name: q
+          in: query
+          required: false
+          description: Término de búsqueda en título o descripción
+          schema:
+            type: string
+        - name: limite
+          in: query
+          required: false
+          description: Cantidad máxima de subastas a retornar (1-50, por defecto 20)
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista de subastas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionListResponse'
+        '400':
+          description: Parámetros de consulta inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Publicar una nueva subasta
+      description: Crea una subasta con precio inicial, incremento automático, foto y fecha de cierre calculada según la duración.
+      security:
+        - cookieAuth: []
+        - demoHeaderAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAuctionInput'
+      responses:
+        '201':
+          description: Subasta creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAuctionResponse'
+        '400':
+          description: Datos de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Usuario no autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/subastas/{id}:
+    get:
+      summary: Obtener detalle de una subasta
+      description: Retorna la información completa de una subasta por su identificador único.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID único de la subasta
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detalle de la subasta encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetailResponse'
+        '404':
+          description: Subasta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      summary: Actualizar subasta
+      description: Permite al vendedor modificar título o descripción únicamente si la subasta no ha recibido pujas aún.
+      security:
+        - cookieAuth: []
+        - demoHeaderAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la subasta a actualizar
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAuctionInput'
+      responses:
+        '200':
+          description: Subasta actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetailResponse'
+        '400':
+          description: No se puede editar porque ya tiene pujas registradas o datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No eres el vendedor propietario de esta subasta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subasta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Cancelar subasta
+      description: Marca la subasta con estado cancelada únicamente si no tiene pujas activas.
+      security:
+        - cookieAuth: []
+        - demoHeaderAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la subasta a cancelar
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subasta cancelada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAuctionResponse'
+        '400':
+          description: No se puede cancelar porque ya tiene pujas registradas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subasta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/subastas/{id}/pujas:
+    post:
+      summary: Realizar puja (atómica y con regla anti-francotirador)
+      description: >
+        Procesa una nueva puja mediante una transacción atómica concurrente.
+        Aplica la regla anti-sniper: si la puja entra en el último minuto (< 60s antes de cerrar),
+        la subasta se extiende automáticamente 60 segundos adicionales.
+      security:
+        - cookieAuth: []
+        - demoHeaderAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la subasta en la cual pujar
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceBidInput'
+      responses:
+        '201':
+          description: Puja aceptada y subasta actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceBidResponse'
+        '400':
+          description: Monto inferior a la puja mínima requerida (actual + incremento)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Usuario no autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: El vendedor no puede autopujarse en su propia subasta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Subasta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflicto de concurrencia o subasta ya cerrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/subastas/server-time:
+    get:
+      summary: Obtener hora oficial del servidor
+      description: Retorna la fecha y hora UTC oficial del servidor para calibrar el hook useCountdown en el cliente.
+      responses:
+        '200':
+          description: Hora del servidor obtenida con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerTimeResponse'
+
+  /api/auth/session:
+    post:
+      summary: Crear sesión de usuario
+      description: Genera una sesión de autenticación y emite una cookie segura HttpOnly (SameSite=Lax).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionInput'
+      responses:
+        '200':
+          description: Sesión iniciada con éxito y cookie establecida
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: subastas_session=demo-token%3Acomprador-demo-01; Path=/; HttpOnly; SameSite=Lax
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionResponse'
+        '400':
+          description: Credenciales o demo_uid inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Cerrar sesión
+      description: Invalida la sesión actual y elimina la cookie HttpOnly con Max-Age=0.
+      responses:
+        '200':
+          description: Sesión cerrada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSessionResponse'
+
+  /api/auth/me:
+    get:
+      summary: Obtener información del usuario autenticado
+      description: Lee la cookie de sesión HttpOnly y devuelve el perfil del usuario actual.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Datos del usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSessionResponse'
+        '401':
+          description: Sesión inexistente o expirada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/fotos/upload:
+    post:
+      summary: Subir foto a Vercel Blob
+      description: Carga un archivo de imagen (JPEG, PNG, WebP) de hasta 4.5 MB directamente a Vercel Blob.
+      security:
+        - cookieAuth: []
+        - demoHeaderAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Archivo de imagen a subir
+      responses:
+        '201':
+          description: Imagen subida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadPhotoResponse'
+        '400':
+          description: Formato no permitido o tamaño superior a 4.5 MB
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: subastas_session
+      description: Cookie de sesión HttpOnly emitida por /api/auth/session
+    demoHeaderAuth:
+      type: apiKey
+      in: header
+      name: x-user-uid
+      description: Identificador de usuario demo para pruebas automatizadas (comprador-demo-01 o vendedor-demo-01)
+
+  schemas:
+    AuctionStatus:
+      type: string
+      enum: [activa, cerrada, cancelada]
+
+    Role:
+      type: string
+      enum: [COMPRADOR, VENDEDOR, ADMINISTRADOR]
+
+    AuctionDetail:
+      type: object
+      required:
+        - id
+        - titulo
+        - descripcion
+        - fotos
+        - precio_inicial_centavos
+        - incremento_centavos
+        - puja_actual_centavos
+        - vendedor_uid
+        - cierra_en
+        - estado
+      properties:
+        id:
+          type: string
+          example: subasta-vintage-01
+        titulo:
+          type: string
+          example: Reloj Suizo Vintage de Colección
+        descripcion:
+          type: string
+          example: Reloj de cuerda manual suizo de los años 60 en perfecto estado operativo.
+        fotos:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: ["https://images.unsplash.com/photo-1524805444758-089113d48a6d"]
+        precio_inicial_centavos:
+          type: integer
+          example: 15000000
+        incremento_centavos:
+          type: integer
+          example: 1500000
+        puja_actual_centavos:
+          type: integer
+          example: 18000000
+        vendedor_uid:
+          type: string
+          example: vendedor-demo-01
+        ganador_uid:
+          type: string
+          nullable: true
+          example: comprador-demo-01
+        cierra_en:
+          type: string
+          format: date-time
+          example: '2026-11-20T18:00:00.000Z'
+        estado:
+          $ref: '#/components/schemas/AuctionStatus'
+
+    AuctionListResponse:
+      type: object
+      required:
+        - subastas
+        - total
+      properties:
+        subastas:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuctionDetail'
+        total:
+          type: integer
+          example: 3
+
+    AuctionDetailResponse:
+      type: object
+      required:
+        - subasta
+      properties:
+        subasta:
+          $ref: '#/components/schemas/AuctionDetail'
+
+    CreateAuctionInput:
+      type: object
+      required:
+        - titulo
+        - descripcion
+        - foto_url
+        - precio_inicial_pesos
+        - duracion_dias
+      properties:
+        titulo:
+          type: string
+          minLength: 5
+          maxLength: 100
+          example: Laptop Gamer Pro RTX 4070
+        descripcion:
+          type: string
+          minLength: 20
+          maxLength: 2000
+          example: Portátil de alto rendimiento con procesador i7 y pantalla 165Hz.
+        foto_url:
+          type: string
+          format: uri
+          example: https://images.unsplash.com/photo-1603302576837-37561b2e2302
+        precio_inicial_pesos:
+          type: integer
+          minimum: 10000
+          example: 2500000
+        duracion_dias:
+          type: integer
+          enum: [1, 3, 5, 7]
+          example: 3
+
+    CreateAuctionResponse:
+      type: object
+      required:
+        - subasta
+      properties:
+        subasta:
+          $ref: '#/components/schemas/AuctionDetail'
+
+    UpdateAuctionInput:
+      type: object
+      properties:
+        titulo:
+          type: string
+          minLength: 5
+          maxLength: 100
+          example: Reloj Suizo Vintage Edición Oro
+        descripcion:
+          type: string
+          minLength: 20
+          maxLength: 2000
+          example: Reloj de cuerda manual suizo con correa de cuero genuino restaurada.
+
+    DeleteAuctionResponse:
+      type: object
+      required:
+        - mensaje
+        - subasta_id
+        - estado
+      properties:
+        mensaje:
+          type: string
+          example: Subasta cancelada exitosamente
+        subasta_id:
+          type: string
+          example: subasta-vintage-01
+        estado:
+          $ref: '#/components/schemas/AuctionStatus'
+
+    PlaceBidInput:
+      type: object
+      required:
+        - monto_centavos
+      properties:
+        monto_centavos:
+          type: integer
+          minimum: 1
+          example: 19500000
+
+    BidItem:
+      type: object
+      required:
+        - id
+        - subasta_id
+        - postor_uid
+        - monto_centavos
+        - creada_en
+      properties:
+        id:
+          type: string
+          example: puja-1731698400000
+        subasta_id:
+          type: string
+          example: subasta-vintage-01
+        postor_uid:
+          type: string
+          example: comprador-demo-01
+        monto_centavos:
+          type: integer
+          example: 19500000
+        creada_en:
+          type: string
+          format: date-time
+          example: '2026-11-15T22:00:00.000Z'
+
+    AuctionUpdatedSnapshot:
+      type: object
+      required:
+        - id
+        - puja_actual_centavos
+        - ganador_uid
+        - cierra_en
+        - extension_aplicada
+      properties:
+        id:
+          type: string
+          example: subasta-vintage-01
+        puja_actual_centavos:
+          type: integer
+          example: 19500000
+        ganador_uid:
+          type: string
+          nullable: true
+          example: comprador-demo-01
+        cierra_en:
+          type: string
+          format: date-time
+          example: '2026-11-20T18:01:00.000Z'
+        extension_aplicada:
+          type: boolean
+          example: true
+
+    PlaceBidResponse:
+      type: object
+      required:
+        - puja
+        - subasta_actualizada
+      properties:
+        puja:
+          $ref: '#/components/schemas/BidItem'
+        subasta_actualizada:
+          $ref: '#/components/schemas/AuctionUpdatedSnapshot'
+
+    ServerTimeResponse:
+      type: object
+      required:
+        - server_time
+      properties:
+        server_time:
+          type: string
+          format: date-time
+          example: '2026-11-15T22:15:30.123Z'
+
+    AccountUser:
+      type: object
+      required:
+        - uid
+        - email
+        - nombre
+        - rol
+      properties:
+        uid:
+          type: string
+          example: comprador-demo-01
+        email:
+          type: string
+          format: email
+          example: comprador.demo@subastas.com
+        nombre:
+          type: string
+          example: Carlos Comprador
+        rol:
+          $ref: '#/components/schemas/Role'
+
+    CreateSessionInput:
+      type: object
+      properties:
+        demo_uid:
+          type: string
+          enum: [comprador-demo-01, vendedor-demo-01]
+          example: comprador-demo-01
+        id_token:
+          type: string
+          description: Token JWT de Firebase Auth
+
+    AuthSessionResponse:
+      type: object
+      required:
+        - usuario
+      properties:
+        usuario:
+          $ref: '#/components/schemas/AccountUser'
+
+    DeleteSessionResponse:
+      type: object
+      required:
+        - mensaje
+      properties:
+        mensaje:
+          type: string
+          example: Sesión cerrada exitosamente
+
+    UploadPhotoResponse:
+      type: object
+      required:
+        - foto_url
+        - tamano_bytes
+        - tipo_mime
+      properties:
+        foto_url:
+          type: string
+          format: uri
+          example: https://blob.vercel-storage.com/subastas/foto-123.webp
+        tamano_bytes:
+          type: integer
+          example: 245120
+        tipo_mime:
+          type: string
+          example: image/webp
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - VALIDATION_ERROR
+                - UNAUTHENTICATED
+                - FORBIDDEN
+                - NOT_FOUND
+                - CONFLICT
+                - EXPIRED
+                - INTERNAL_ERROR
+              example: CONFLICT
+            message:
+              type: string
+              example: La puja actual ya ha sido superada
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                    example: monto_centavos
+                  message:
+                    type: string
+                    example: El monto debe superar la puja actual más el incremento mínimo

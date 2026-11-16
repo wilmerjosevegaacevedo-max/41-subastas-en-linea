@@ -1,0 +1,26 @@
+meta {
+  name: Publicar nueva subasta
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/subastas
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-user-uid: vendedor-demo-01
+}
+
+body:json {
+  {
+    "titulo": "Consola Retro Edición Limitada",
+    "descripcion": "Consola clásica restaurada con dos mandos originales y cables en caja sellada.",
+    "foto_url": "https://images.unsplash.com/photo-1550745165-9bc0b252726f",
+    "precio_inicial_pesos": 350000,
+    "duracion_dias": 3
+  }
+}

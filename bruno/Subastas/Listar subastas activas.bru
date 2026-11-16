@@ -1,0 +1,16 @@
+meta {
+  name: Listar subastas activas
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/subastas?estado=activa&limite=20
+  body: none
+  auth: none
+}
+
+params:query {
+  estado: activa
+  limite: 20
+}

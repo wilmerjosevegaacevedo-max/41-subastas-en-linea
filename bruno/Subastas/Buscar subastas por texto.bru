@@ -1,0 +1,15 @@
+meta {
+  name: Buscar subastas por texto
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/subastas?q=reloj
+  body: none
+  auth: none
+}
+
+params:query {
+  q: reloj
+}

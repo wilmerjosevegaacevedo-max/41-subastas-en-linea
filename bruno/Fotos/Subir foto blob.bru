@@ -1,0 +1,15 @@
+meta {
+  name: Subir foto a Vercel Blob
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/fotos/upload
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  file: @file()
+}

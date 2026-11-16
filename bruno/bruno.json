@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "41 · Subastas en Línea API",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

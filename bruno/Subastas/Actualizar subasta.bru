@@ -1,0 +1,23 @@
+meta {
+  name: Actualizar subasta
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/api/subastas/subasta-laptop-02
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-user-uid: vendedor-tech-01
+}
+
+body:json {
+  {
+    "titulo": "Laptop Gamer Pro RTX 4070 (Edición 32GB RAM)",
+    "descripcion": "Descripción actualizada con ampliación a 32GB de memoria RAM DDR5 y mouse gamer incluido."
+  }
+}
