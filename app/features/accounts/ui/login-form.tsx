@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AuthSessionResponseSchema } from "../schema";
 
@@ -85,7 +85,6 @@ interface LoginTabProps {
 }
 
 function LoginTabContent({ redirectUrl }: LoginTabProps) {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -108,8 +107,7 @@ function LoginTabContent({ redirectUrl }: LoginTabProps) {
       }
 
       AuthSessionResponseSchema.parse(await res.json());
-      router.push(redirectUrl);
-      router.refresh();
+      window.location.assign(redirectUrl);
     } catch {
       setErrorMessage("Error de conexión al iniciar sesión");
       setIsLoading(false);
@@ -138,8 +136,7 @@ function LoginTabContent({ redirectUrl }: LoginTabProps) {
       }
 
       AuthSessionResponseSchema.parse(await res.json());
-      router.push(redirectUrl);
-      router.refresh();
+      window.location.assign(redirectUrl);
     } catch {
       setErrorMessage("Error de conexión al iniciar sesión");
       setIsLoading(false);
@@ -281,7 +278,6 @@ interface RegisterTabProps {
 }
 
 function RegisterTabContent({ redirectUrl }: RegisterTabProps) {
-  const router = useRouter();
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -324,8 +320,7 @@ function RegisterTabContent({ redirectUrl }: RegisterTabProps) {
       }
 
       AuthSessionResponseSchema.parse(await res.json());
-      router.push(redirectUrl);
-      router.refresh();
+      window.location.assign(redirectUrl);
     } catch {
       setErrorMessage("Error de conexión al registrar usuario");
       setIsLoading(false);
