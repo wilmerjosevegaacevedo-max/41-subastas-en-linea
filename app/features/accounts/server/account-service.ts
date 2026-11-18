@@ -1,9 +1,11 @@
+import { randomUUID } from "node:crypto";
 import type { SessionIdentity } from "@/shared/schema";
 import { DomainError } from "@/shared/server/errors";
 import { getFirebaseAuth } from "@/shared/server/firebase-admin";
 import type { SessionVerifier } from "@/shared/server/session";
-import type { AccountUser, CreateSessionInput } from "../schema";
-import type { AccountRepository } from "./repository";
+import type { AccountUser, CreateSessionInput, RegisterUserInput } from "../schema";
+import type { AccountRecord, AccountRepository } from "./repository";
+import { hashPassword } from "./repository.memory";
 
 export interface AccountServiceDependencies {
   repository: AccountRepository;
@@ -21,7 +23,41 @@ export class AccountService implements SessionVerifier {
     if (user === null) {
       throw new DomainError("NOT_FOUND", "Usuario no encontrado");
     }
-    return user;
+    return {
+      uid: user.uid,
+      email: user.email,
+      nombre: user.nombre,
+      rol: user.rol,
+    };
+  }
+
+  async register(input: RegisterUserInput): Promise<{ user: AccountUser; sessionToken: string }> {
+    const existing = await this.repository.findByEmail(input.email);
+    if (existing !== null) {
+      throw new DomainError("CONFLICT", "El correo electrónico ya se encuentra registrado");
+    }
+
+    const uid = `user-${randomUUID()}`;
+    const passwordHash = hashPassword(input.password);
+
+    const record: AccountRecord = {
+      uid,
+      email: input.email.toLowerCase().trim(),
+      nombre: input.nombre.trim(),
+      rol: input.rol,
+      password_hash: passwordHash,
+    };
+
+    const saved = await this.repository.save(record);
+    const user: AccountUser = {
+      uid: saved.uid,
+      email: saved.email,
+      nombre: saved.nombre,
+      rol: saved.rol,
+    };
+
+    const sessionToken = `user-token:${user.uid}`;
+    return { user, sessionToken };
   }
 
   async createSession(input: CreateSessionInput): Promise<{ user: AccountUser; sessionToken: string }> {
@@ -29,11 +65,40 @@ export class AccountService implements SessionVerifier {
       return this.handleDemoLogin(input.demo_uid);
     }
 
+    if (input.email !== undefined && input.password !== undefined) {
+      return this.handleCredentialsLogin(input.email, input.password);
+    }
+
     if (input.id_token !== undefined && input.id_token.trim() !== "") {
       return this.handleFirebaseIdToken(input.id_token);
     }
 
-    throw new DomainError("VALIDATION_ERROR", "Se requiere demo_uid o id_token para iniciar sesión");
+    throw new DomainError("VALIDATION_ERROR", "Se requieren credenciales válidas para iniciar sesión");
+  }
+
+  private async handleCredentialsLogin(
+    email: string,
+    password: string,
+  ): Promise<{ user: AccountUser; sessionToken: string }> {
+    const record = await this.repository.findByEmail(email);
+    if (record === null) {
+      throw new DomainError("UNAUTHENTICATED", "Credenciales inválidas");
+    }
+
+    const expectedHash = hashPassword(password);
+    if (record.password_hash === undefined || record.password_hash !== expectedHash) {
+      throw new DomainError("UNAUTHENTICATED", "Credenciales inválidas");
+    }
+
+    const user: AccountUser = {
+      uid: record.uid,
+      email: record.email,
+      nombre: record.nombre,
+      rol: record.rol,
+    };
+
+    const sessionToken = `user-token:${user.uid}`;
+    return { user, sessionToken };
   }
 
   private async handleDemoLogin(
@@ -59,7 +124,15 @@ export class AccountService implements SessionVerifier {
     }
 
     const sessionToken = `demo-token:${demoUid}`;
-    return { user, sessionToken };
+    return {
+      user: {
+        uid: user.uid,
+        email: user.email,
+        nombre: user.nombre,
+        rol: user.rol,
+      },
+      sessionToken,
+    };
   }
 
   private async handleFirebaseIdToken(idToken: string): Promise<{ user: AccountUser; sessionToken: string }> {
@@ -96,7 +169,15 @@ export class AccountService implements SessionVerifier {
       expiresIn: 5 * 24 * 60 * 60 * 1000,
     });
 
-    return { user, sessionToken };
+    return {
+      user: {
+        uid: user.uid,
+        email: user.email,
+        nombre: user.nombre,
+        rol: user.rol,
+      },
+      sessionToken,
+    };
   }
 
   async verify(token: string): Promise<SessionIdentity> {
@@ -105,6 +186,19 @@ export class AccountService implements SessionVerifier {
       const user = await this.repository.findByUid(demoUid);
       if (user === null) {
         throw new DomainError("UNAUTHENTICATED", "Sesión demo inválida");
+      }
+      return {
+        uid: user.uid,
+        email: user.email,
+        role: user.rol,
+      };
+    }
+
+    if (token.startsWith("user-token:")) {
+      const uid = token.replace("user-token:", "");
+      const user = await this.repository.findByUid(uid);
+      if (user === null) {
+        throw new DomainError("UNAUTHENTICATED", "Sesión de usuario inválida");
       }
       return {
         uid: user.uid,

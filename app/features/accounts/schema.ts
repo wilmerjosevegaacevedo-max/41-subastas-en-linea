@@ -17,9 +17,18 @@ export const LoginDemoInputSchema = z.object({
   demo_uid: z.enum(["comprador-demo-01", "vendedor-demo-01"]),
 });
 
+export const RegisterUserInputSchema = z.object({
+  nombre: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+  email: z.string().email("Correo electrónico inválido"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  rol: RoleSchema.default("COMPRADOR"),
+});
+
 export const CreateSessionInputSchema = z.object({
   id_token: z.string().min(1).optional(),
   demo_uid: z.enum(["comprador-demo-01", "vendedor-demo-01"]).optional(),
+  email: z.string().email("Correo electrónico inválido").optional(),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
 });
 
 export const AuthSessionResponseSchema = z.object({
@@ -33,6 +42,7 @@ export const DeleteSessionResponseSchema = z.object({
 export type AccountUser = z.infer<typeof AccountUserSchema>;
 export type LoginCredentialsInput = z.infer<typeof LoginCredentialsInputSchema>;
 export type LoginDemoInput = z.infer<typeof LoginDemoInputSchema>;
+export type RegisterUserInput = z.infer<typeof RegisterUserInputSchema>;
 export type CreateSessionInput = z.infer<typeof CreateSessionInputSchema>;
 export type AuthSessionResponse = z.infer<typeof AuthSessionResponseSchema>;
 export type DeleteSessionResponse = z.infer<typeof DeleteSessionResponseSchema>;

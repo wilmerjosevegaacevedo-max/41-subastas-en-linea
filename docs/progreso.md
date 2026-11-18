@@ -14,3 +14,4 @@
 | F9 · Subida de fotos Vercel Blob | Terminada | `docs/specs/F9-fotos-blob.md` | `docs/handoffs/F9-fotos-blob.md` | 2026-11-14 |
 | F10 · Calidad y Despliegue | Terminada | `docs/specs/F10-calidad-despliegue.md` | `docs/handoffs/F10-calidad-despliegue.md` | 2026-11-15 |
 | F11 · Mejoras Revisión 1 (Rúbrica Completa) | Terminada | `docs/specs/F11-revision-profesor-mejoras.md` | `docs/handoffs/F11-revision-profesor-mejoras.md` | 2026-11-16 |
+| F12 · Registro de nuevos usuarios y credenciales | Terminada | `docs/specs/F12-registro-usuarios-credenciales.md` | `docs/handoffs/F12-registro-usuarios-credenciales.md` | 2026-11-17 |

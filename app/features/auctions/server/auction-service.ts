@@ -46,11 +46,7 @@ export class AuctionService {
     if (auction === null) {
       throw new DomainError("NOT_FOUND", "La subasta solicitada no existe");
     }
-    let currentTime = new Date();
-    if (now !== undefined) {
-      currentTime = now;
-    }
-    if (auction.estado === "activa" && currentTime.getTime() >= new Date(auction.cierra_en).getTime()) {
+    if (now !== undefined && auction.estado === "activa" && now.getTime() >= new Date(auction.cierra_en).getTime()) {
       const closed: AuctionDetail = {
         ...auction,
         estado: "cerrada",

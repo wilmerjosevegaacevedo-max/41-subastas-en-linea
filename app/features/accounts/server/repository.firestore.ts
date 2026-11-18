@@ -1,37 +1,67 @@
 import { getFirestoreDb } from "@/shared/server/firebase-admin";
-import { type AccountUser, AccountUserSchema } from "../schema";
-import type { AccountRepository } from "./repository";
+import { AccountUserSchema } from "../schema";
+import type { AccountRecord, AccountRepository } from "./repository";
 
 export interface FirestoreAccountAdapter {
-  getUser(uid: string): Promise<AccountUser | null>;
-  getUserByEmail(email: string): Promise<AccountUser | null>;
-  saveUser(user: AccountUser): Promise<void>;
+  getUser(uid: string): Promise<AccountRecord | null>;
+  getUserByEmail(email: string): Promise<AccountRecord | null>;
+  saveUser(user: AccountRecord): Promise<void>;
 }
 
 export class DefaultFirestoreAccountAdapter implements FirestoreAccountAdapter {
-  async getUser(uid: string): Promise<AccountUser | null> {
+  async getUser(uid: string): Promise<AccountRecord | null> {
     const db = getFirestoreDb();
     const doc = await db.collection("users").doc(uid).get();
     if (!doc.exists) {
       return null;
     }
-    return AccountUserSchema.parse(doc.data());
+    const data = doc.data();
+    if (data === undefined) {
+      return null;
+    }
+    const user = AccountUserSchema.parse(data);
+    let passwordHash: string | undefined = undefined;
+    if (typeof data.password_hash === "string") {
+      passwordHash = data.password_hash;
+    }
+    return {
+      ...user,
+      password_hash: passwordHash,
+    };
   }
 
-  async getUserByEmail(email: string): Promise<AccountUser | null> {
+  async getUserByEmail(email: string): Promise<AccountRecord | null> {
     const db = getFirestoreDb();
     const snapshot = await db.collection("users").where("email", "==", email.toLowerCase().trim()).limit(1).get();
     const firstDoc = snapshot.docs[0];
     if (firstDoc === undefined) {
       return null;
     }
-    return AccountUserSchema.parse(firstDoc.data());
+    const data = firstDoc.data();
+    const user = AccountUserSchema.parse(data);
+    let passwordHash: string | undefined = undefined;
+    if (typeof data.password_hash === "string") {
+      passwordHash = data.password_hash;
+    }
+    return {
+      ...user,
+      password_hash: passwordHash,
+    };
   }
 
-  async saveUser(user: AccountUser): Promise<void> {
+  async saveUser(user: AccountRecord): Promise<void> {
     const db = getFirestoreDb();
     const validated = AccountUserSchema.parse(user);
-    await db.collection("users").doc(validated.uid).set(validated);
+    const docData: Record<string, string> = {
+      uid: validated.uid,
+      email: validated.email,
+      nombre: validated.nombre,
+      rol: validated.rol,
+    };
+    if (user.password_hash !== undefined) {
+      docData.password_hash = user.password_hash;
+    }
+    await db.collection("users").doc(validated.uid).set(docData);
   }
 }
 
@@ -46,15 +76,15 @@ export class FirestoreAccountRepository implements AccountRepository {
     }
   }
 
-  async findByUid(uid: string): Promise<AccountUser | null> {
+  async findByUid(uid: string): Promise<AccountRecord | null> {
     return this.adapter.getUser(uid);
   }
 
-  async findByEmail(email: string): Promise<AccountUser | null> {
+  async findByEmail(email: string): Promise<AccountRecord | null> {
     return this.adapter.getUserByEmail(email);
   }
 
-  async save(user: AccountUser): Promise<AccountUser> {
+  async save(user: AccountRecord): Promise<AccountRecord> {
     await this.adapter.saveUser(user);
     return user;
   }
